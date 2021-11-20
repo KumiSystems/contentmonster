@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.swp
+settings.ini
+database.sqlite3
+venv/
+.vscode
