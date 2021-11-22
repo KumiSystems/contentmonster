@@ -22,7 +22,3 @@ class Directory:
     def getFiles(self):
         files = [f for f in os.listdir(self.location) if os.path.isfile]
         return [File(f, self) for f in files]
-
-    @property
-    def tempdir(self):
-        return self.location / ".temp"

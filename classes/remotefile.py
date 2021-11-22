@@ -5,11 +5,10 @@ class RemoteFile:
     def __init__(self, fileobj, vessel, chunksize=1048576):
         self.file = fileobj
         self.vessel = vessel
-        self.tempdir = self.vessel.connection.assertTempDirectory(self.file.directory)
         self.chunksize = chunksize
 
     def getStatus(self):
-        ls = self.vessel.connection._listdir(self.tempdir)
+        ls = self.vessel.connection._listdir(self.vessel.tempdir)
         files = [f for f in ls if f.startswith(self.file.uuid) and f.endswith(".part")]
 
         ids = [-1]

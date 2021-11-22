@@ -48,15 +48,22 @@ class Database:
         fileuuid = str(uuid.uuid4())
         self._execute("INSERT INTO contentmonster_file(uuid, directory, name, checksum) VALUES (?, ?, ?, ?)", (fileuuid, fileobj.directory.name, fileobj.name, hash))
         return fileuuid
+
+    def getFileByUUID(self, fileuuid):
+        cur = self.getCursor()
+        cur.execute("SELECT directory, name, checksum FROM contentmonster_file WHERE uuid = ?", (fileuuid ,))
+        if (result := cur.fetchone()):
+            return result
         
     def removeFileByUUID(self, fileuuid):
         self._execute("DELETE FROM contentmonster_file WHERE uuid = ?", (fileuuid,))
 
-    def logStart(self, file, vessel):
-        self._execute("INSERT INTO contentmonster_file_log(file, vessel, status) VALUES(?, ?, ?)", (file.uuid, vessel.name, False))
-
     def logCompletion(self, file, vessel):
-        self._execute("UPDATE contentmonster_file_log SET status = ? WHERE file = ? AND vessel = ?", (True, file.uuid, vessel.name))
+        self._execute("INSERT INTO contentmonster_file_log(file, vessel) VALUES(?, ?)", (file.uuid, vessel.name))
+
+    def getCompletionForVessel(self, vessel):
+        cur = self.getCursor()
+        cur.execute("SELECT file FROM contentmonster_file_log WHERE vessel = ?", (vessel.name,))
 
     def migrate(self):
         cur = self.getCursor()
@@ -68,7 +75,7 @@ class Database:
 
         if self.getVersion() == 1:
             cur.execute("CREATE TABLE IF NOT EXISTS contentmonster_file(uuid VARCHAR(36) PRIMARY KEY, directory VARCHAR(128), name VARCHAR(128), checksum VARCHAR(64))")
-            cur.execute("CREATE TABLE IF NOT EXISTS contentmonster_file_log(file VARCHAR(36), vessel VARCHAR(128), status BOOLEAN, PRIMARY KEY (file, vessel), FOREIGN KEY (file) REFERENCES contentmonster_files(uuid) ON DELETE CASCADE)") 
+            cur.execute("CREATE TABLE IF NOT EXISTS contentmonster_file_log(file VARCHAR(36), vessel VARCHAR(128), PRIMARY KEY (file, vessel), FOREIGN KEY (file) REFERENCES contentmonster_files(uuid) ON DELETE CASCADE)") 
             cur.execute("UPDATE contentmonster_settings SET value = '2' WHERE key = 'dbversion'")
             self.commit()
 

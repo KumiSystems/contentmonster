@@ -12,14 +12,16 @@ class MonsterConfig:
         if not "MONSTER" in parser.sections():
             raise ValueError("Config file does not contain a MONSTER section!")
 
-        directories = []
-        vessels = []
+        config = cls()
 
         for section in parser.sections():
             if section.startswith("Directory"):
-                directories.append(Directory.fromConfig(parser[section]))
+                config.directories.append(Directory.fromConfig(parser[section]))
             elif section.startswith("Vessel"):
-                vessels.append(Vessel.fromConfig(parser[section]))
+                config.vessels.append(Vessel.fromConfig(parser[section]))
+
+        return config
 
     def __init__(self):
-        pass
+        self.directories = []
+        self.vessels = []

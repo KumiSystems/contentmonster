@@ -30,21 +30,21 @@ class Connection:
     def _mkdir(self, path):
         return self._sftp.mkdir(str(path))
 
-    def _listdir(self, path):
-        return self._sftp.listdir(str(path))
+    def _listdir(self, path=None):
+        return self._sftp.listdir(str(path) if path else None)
 
     def _remove(self, path):
         return self._sftp.remove(str(path))
 
-    def assertTempDirectory(self, directory):
-        for d in [directory, directory.tempdir]:
+    def assertDirectories(self, directory):
+        for d in [directory, self._vessel.tempdir]:
             if not self._exists(d):
                 self._mkdir(d)
             elif not self._isdir(d):
                 raise ValueError(f"{d} exists but is not a directory on Vessel {self._vessel.name}!")
 
-    def assertChunkComplete(self, chunk):
-        path = chunk.file.directory.tempdir / chunk.getTempName()
+    def assertChunkComplete(self, chunk, path=None):
+        path = path or self._vessel.tempdir / chunk.getTempName()
 
         if self._exists(path):
             _,o,_ = self._client.exec_command("sha256sum -b " + str(path))
@@ -56,20 +56,51 @@ class Connection:
         return False
 
     def pushChunk(self, chunk):
-        path = chunk.file.directory.tempdir / chunk.getTempName()
+        path = self._vessel.tempdir / chunk.getTempName()
         flo = BytesIO(chunk.data)
         self._sftp.putfo(flo, path, len(chunk.data))
 
     def compileComplete(self, remotefile):
         numchunks = remotefile.getStatus() + 1
-        files = " ".join([str(remotefile.file.directory.tempdir / f"{remotefile.file.uuid}_{i}.part") for i in range(numchunks)])
+        files = " ".join([str(self._vessel.tempdir / f"{remotefile.file.uuid}_{i}.part") for i in range(numchunks)])
         completefile = remotefile.file.getChunk(-1)
         outname = completefile.getTempName()
-        outpath = remotefile.file.directory.tempdir / outname
+        outpath = self._vessel.tempdir / outname
         _,o,_ = self._client.exec_command(f"cat {files} > {outpath}")
         o.channel.recv_exit_status()
 
-        return self.assertChunkComplete(completefile)
+    def assertComplete(self, remotefile, allow_retry=False):
+        completefile = remotefile.file.getChunk(-1)
+        outname = completefile.getTempName()
+        outpath = self._vessel.tempdir / outname
+
+        if not self._exists(outpath):
+            return False
+
+        if not self.assertChunkComplete(completefile):
+            if allow_retry:
+                self._remove(outpath)
+            else:
+                self.clearTempDir()
+            return False
+        
+        return True
+
+    def moveComplete(self, remotefile):
+        completefile = remotefile.file.getChunk(-1)
+        destination = remotefile.getFullPath()
+        self._sftp.rename(str(self._vessel.tempdir / completefile.getTempName()), str(destination))
+        self._sftp.stat(str(destination))
+        return True
+
+    def getCurrentUploadUUID(self):
+        for f in self._listdir(self._vessel.tempdir):
+            if f.endswith(".part"):
+                return f.split("_")[0]
+
+    def clearTempDir(self):
+        for f in self._listdir(self._vessel.tempdir):
+            self._remove(self._vessel.tempdir / f)
 
     def __del__(self):
         self._client.close()
