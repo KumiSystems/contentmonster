@@ -6,13 +6,13 @@ class DogHandler(FileSystemEventHandler):
         self._queue = queue
 
     def on_created(self, event):
-        pass
+        self._queue.put("Created: " + event.src_path)
 
     def on_modified(self, event):
-        pass
+        self._queue.put("Modified: " + event.src_path)
 
     def on_moved(self, event):
-        pass
+        self._queue.put("Moved: " + event.src_path + " to: " + event.dest_path)
 
     def on_deleted(self, event):
-        pass
+        self._queue.put("Deleted: " + event.src_path)

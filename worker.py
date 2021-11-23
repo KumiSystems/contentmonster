@@ -24,7 +24,7 @@ if __name__ == '__main__':
             threads.append(thread)
 
         try:
-            shore = ShoreThread(files)
+            shore = ShoreThread(files, config.directories)
             shore.run()
         except KeyboardInterrupt:
                 print("Keyboard interrupt received - stopping threads")
