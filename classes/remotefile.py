@@ -97,3 +97,9 @@ class RemoteFile:
             RemoteFile initialization value
         """
         return self.file.getChunk(count, self.chunksize)
+
+    def finalizeUpload(self) -> None:
+        """Move complete file to its final destination and clean up
+        """
+        self.vessel.connection.moveComplete(self)
+        self.vessel.connection.clearTempDir()

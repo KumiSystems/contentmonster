@@ -53,7 +53,7 @@ class Vessel:
         self.address = address
         self.tempdir = pathlib.Path(tempdir or "/tmp/.ContentMonster/")
         self._connection = None
-        self._uploaded = self.getUploadedFromDB() # Files already uploaded
+        self._uploaded = self.getUploadedFromDB()  # Files already uploaded
 
     @property
     def connection(self) -> Connection:
@@ -100,3 +100,25 @@ class Vessel:
         """Clean up the temporary directory on the Vessel 
         """
         self.connection.clearTempDir()
+
+    def pushChunk(self, chunk, path: Optional[Union[str, pathlib.Path]] = None) -> None:
+        """Push the content of a Chunk object to the Vessel
+
+        Args:
+            chunk (classes.chunk.Chunk): Chunk object containing the data to
+              push to the Vessel
+            path (str, pathlib.Path, optional): Path at which to store the
+              Chunk on the Vessel. If None, use default location provided by
+              Vessel configuration and name provided by Chunk object. Defaults
+              to None.
+        """
+        self.connection.pushChunk(chunk, path)
+
+    def compileComplete(self, remotefile) -> None:
+        """Build a complete File from uploaded Chunks.
+
+        Args:
+            remotefile (classes.remotefile.RemoteFile): RemoteFile object
+              describing the uploaded File
+        """
+        self.connection.compileComplete(remotefile)

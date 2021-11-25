@@ -1,7 +1,11 @@
 from multiprocessing import Process
-from typing import NoReturn
+from typing import NoReturn, Optional
 
 from classes.vessel import Vessel
+from classes.remotefile import RemoteFile
+from classes.retry import retry
+from classes.database import Database
+from const import STATUS_COMPLETE, STATUS_START
 
 import time
 
@@ -33,17 +37,40 @@ class VesselThread(Process):
                       self.vessel.name)
                 print(repr(e))
 
+    @retry()
     def upload(self) -> None:
         """Continue uploading process
         """
-        if not (current := self.vessel.currentUpload):
-            self.processQueue()
+        if not (current := self.vessel.currentUpload() or self.processQueue()):
             return
-        pass
 
-    def processQueue(self) -> None:
-        """Start uploading a file from the processing queue
+        remotefile = RemoteFile(current, self.vessel,
+                                self._state["config"].chunksize)
+
+        while True:
+            status = remotefile.getStatus()
+
+            if status == STATUS_COMPLETE:
+                remotefile.finalizeUpload()
+                db = Database()
+                db.logCompletion(current, self.vessel)
+                return
+
+            nextchunk = 0 if status == STATUS_START else status + 1
+
+            chunk = remotefile.getChunk(nextchunk)
+
+            # If the Chunk has no data, the selected range is beyond the end
+            # of the file, i.e. the complete file has already been uploaded
+
+            if chunk.data:
+                self.vessel.pushChunk(chunk)
+            else:
+                self.vessel.compileComplete(remotefile)
+
+    def processQueue(self) -> Optional[str]:
+        """Return a file from the processing queue
         """
         for f in self._state["files"]:
             if not f.uuid in self.vessel._uploaded:
-                pass
+                return f

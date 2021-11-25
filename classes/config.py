@@ -25,6 +25,11 @@ class MonsterConfig:
         if not "MONSTER" in parser.sections():
             raise ValueError("Config file does not contain a MONSTER section!")
 
+        try:
+            self.chunksize = parser["MONSTER"]["ChunkSize"]
+        except KeyError:
+            pass
+
         for section in parser.sections():
             # Read Directories from the config file
             if section.startswith("Directory"):
@@ -40,3 +45,4 @@ class MonsterConfig:
         """
         self.directories = []
         self.vessels = []
+        self.chunksize = 10485760 # Default: 10 MiB

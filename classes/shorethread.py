@@ -105,7 +105,9 @@ class ShoreThread(Process):
                     found = True
 
         if not found:
-            self._state["files"].append(fileobj)
+            # Do not queue file if it is of size 0
+            if os.path.getsize(str(fileobj.getFullPath())):
+                self._state["files"].append(fileobj)
 
     def processFile(self, directory: Directory, name: str) -> None:
         """Process a file entry from the observer queue
