@@ -11,11 +11,13 @@ import time
 
 if __name__ == '__main__':
     config_path = pathlib.Path(__file__).parent.absolute() / "settings.ini"
-    config = MonsterConfig.fromFile(config_path)
+    config = MonsterConfig()
+    config.readFile(config_path)
 
     with Manager() as manager:
         state = manager.dict()
         state["files"] = manager.list()
+        state["config"] = config
 
         threads = []
 
@@ -24,11 +26,15 @@ if __name__ == '__main__':
             thread.start()
             threads.append(thread)
 
-        try:
-            shore = ShoreThread(state, config.directories)
-            shore.run()
-        except KeyboardInterrupt:
-            print("Keyboard interrupt received - stopping threads")
-            for thread in threads:
-                thread.kill()
-            exit()
+        shore = ShoreThread(state)
+        shore.start()
+
+        while True:
+            try:
+                time.sleep(10)
+            except KeyboardInterrupt:
+                print("Keyboard interrupt received - stopping threads")
+                shore.terminate()
+                for thread in threads:
+                    thread.terminate()
+                exit()

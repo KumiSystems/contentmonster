@@ -4,14 +4,14 @@ import os
 import pathlib
 
 from configparser import SectionProxy
-from typing import Union
+from typing import Union, Optional
 
 
 class Directory:
     """Class representing a Directory on the local filesystem
     """
     @classmethod
-    def fromConfig(cls, config: SectionProxy) -> Directory:  # pylint: disable=undefined-variable
+    def fromConfig(cls, config: SectionProxy):
         """Create Directory object from a Directory section in the Config file
 
         Args:
@@ -54,7 +54,22 @@ class Directory:
         """Get all Files in Directory
 
         Returns:
-            list: List of names (str) of files within the Directory
+            list: List of File objects for files within the Directory
         """
         files = [f for f in os.listdir(self.location) if os.path.isfile]
         return [File(f, self) for f in files]
+
+    def getFile(self, name: str) -> Optional[File]:
+        """Get a file in the Directory by name
+
+        Args:
+            name (str): Filename of the File to get
+
+        Returns:
+            File, optional: File object if the file was found, else None
+        """
+
+        try:
+            return File(name, self)
+        except FileNotFoundError:
+            return None

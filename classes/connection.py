@@ -143,7 +143,7 @@ class Connection:
                 return True
         return False
 
-    def pushChunk(self, chunk, path: Optional[str, Path] = None) -> None:
+    def pushChunk(self, chunk, path: Optional[Union[str, Path]] = None) -> None:
         """Push the content of a Chunk object to the Vessel
 
         Args:

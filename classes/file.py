@@ -4,9 +4,13 @@ from classes.database import Database
 from typing import Optional
 
 import hashlib
+import os.path
 
 
 class File:
+    """Object representing a file found in a local Directory
+    """
+
     def __init__(self, name: str, directory, uuid: Optional[str] = None) -> None:
         """Initialize new File object
 
@@ -16,13 +20,25 @@ class File:
               is located within
             uuid (str, optional): Unique identifier of this File object. Will
               be retrieved from database if None. Defaults to None.
+
+        Raises:
+            FileNotFoundError: Raised if the specified File does not exist
         """
         self.name = name
         self.directory = directory
+
+        if not self.exists():
+            raise FileNotFoundError(f"File {self.name} does not exist in {self.directory}!")
+
         self.uuid = uuid or self.getUUID()
 
-    """Object representing a file found in a local Directory
-    """
+    def exists(self) -> bool:
+        """Check if the File exists on the local file system
+
+        Returns:
+            bool: True if the File exists, else False
+        """
+        return os.path.isfile(self.directory.location / self.name)
 
     def getUUID(self) -> str:
         """Return unique identifier for this File object

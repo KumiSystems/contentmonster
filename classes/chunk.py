@@ -5,7 +5,7 @@ class Chunk:
     """A class defining a single chunk of a file to be uploaded"""
 
     @staticmethod
-    def fromFile(fileobj, count: int, chunksize: int) -> type[Chunk]:
+    def fromFile(fileobj, count: int, chunksize: int):
         """Create a new Chunk object from a File
 
         Args:
@@ -15,9 +15,9 @@ class Chunk:
             chunksize (int): Size of each chunk in bytes
 
         Returns:
-            A Chunk object containing the portion of the File object beginning
-            at (count * chunksize) bytes and ending at ((count + 1) * chunksize
-            - 1) bytes
+            classes.chunk.Chunk: A Chunk object containing the portion of the 
+            File object beginning at (count * chunksize) bytes and ending at 
+            ((count + 1) * chunksize - 1) bytes
         """
         return fileobj.getChunk(count, chunksize)
 

@@ -1,18 +1,30 @@
 from multiprocessing import Process
 
+from classes.vessel import Vessel
+
 import time
 
 class VesselThread(Process):
-    def __init__(self, vessel, files):
+    """Thread processing uploads to a single vessel
+    """
+    def __init__(self, vessel: Vessel, state: dict):
+        """Initialize a new VesselThread
+
+        Args:
+            vessel (classes.vessel.Vessel): Vessel object to handle uploads for
+            state (dict): Dictionary containing the current application state
+        """
         super().__init__()
         self.vessel = vessel
-        self.files = files
+        self._state = state
 
     def run(self):
+        """Run thread and process uploads to the vessel
+        """
         print("Launched Vessel Thread for " + self.vessel.name)
         while True:
             try:
-                print(self.files[0])
+                print(self._state["files"][0])
             except:
-                print("Nothing.")
-            time.sleep(10)
+                pass
+            time.sleep(1)

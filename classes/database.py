@@ -32,10 +32,14 @@ class Database:
         """
         cur = self.getCursor()
         cur.execute(query, parameters)
-        self.commit()  # Instantly commit after every write action
+        self.commit()  # Instantly commit after every (potential) write action
 
     def commit(self) -> None:
         """Commit the current database transaction
+
+        N.B.: Commit instantly after every write action to make the database
+        "thread-safe". Connections will time out if the database is locked for
+        more than five seconds.
         """
         self._con.commit()
 
