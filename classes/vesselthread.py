@@ -27,13 +27,23 @@ class VesselThread(Process):
         print("Launched Vessel Thread for " + self.vessel.name)
         while True:
             try:
-                self.processQueue()
+                self.upload()
             except Exception as e:
                 print("An exception occurred in the Vessel Thread for " +
                       self.vessel.name)
                 print(repr(e))
 
+    def upload(self) -> None:
+        """Continue uploading process
+        """
+        if not (current := self.vessel.currentUpload):
+            self.processQueue()
+            return
+        pass
+
     def processQueue(self) -> None:
+        """Start uploading a file from the processing queue
+        """
         for f in self._state["files"]:
             if not f.uuid in self.vessel._uploaded:
                 pass
