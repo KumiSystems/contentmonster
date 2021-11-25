@@ -5,9 +5,11 @@ from classes.vessel import Vessel
 
 import time
 
+
 class VesselThread(Process):
     """Thread processing uploads to a single vessel
     """
+
     def __init__(self, vessel: Vessel, state: dict) -> None:
         """Initialize a new VesselThread
 
@@ -25,7 +27,13 @@ class VesselThread(Process):
         print("Launched Vessel Thread for " + self.vessel.name)
         while True:
             try:
-                print(self._state["files"][0])
-            except:
+                self.processQueue()
+            except Exception as e:
+                print("An exception occurred in the Vessel Thread for " +
+                      self.vessel.name)
+                print(repr(e))
+
+    def processQueue(self) -> None:
+        for f in self._state["files"]:
+            if not f.uuid in self.vessel._uploaded:
                 pass
-            time.sleep(1)
