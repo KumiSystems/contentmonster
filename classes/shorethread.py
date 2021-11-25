@@ -6,6 +6,8 @@ from watchdog.observers import Observer
 from multiprocessing import Process, Queue
 
 import time
+import os.path
+
 
 class ShoreThread:
     def __init__(self, files, directories):
@@ -29,27 +31,33 @@ class ShoreThread:
     def monitor(self):
         for directory in self.directories:
             print("Creating dog for " + str(directory.location))
-            handler = DogHandler(self.queue)
+            handler = DogHandler(directory, self.queue)
             dog = Observer()
-            dog.schedule(handler, str(directory.location))
+            dog.schedule(handler, str(directory.location), False)
             dog.start()
             self._dogs.append(dog)
 
     def run(self):
         print("Launched Shore Thread")
+        self.getAllFiles()
         self.monitor()
         try:
             while True:
+                self.joinDogs()
                 self.processQueue()
         except KeyboardInterrupt:
             self.stop()
             raise
 
+    def joinDogs(self):
+        for dog in self._dogs:
+            dog.join(1)
+
     def processQueue(self):
-        if not self.queue.empty:
-            event = self.queue.get()
-            print(event)
+        event = self.queue.get()
+        print(event)
 
     def stop(self):
         for dog in self._dogs:
-            dog.kill()
+            dog.stop()
+            dog.join()

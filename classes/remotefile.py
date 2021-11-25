@@ -1,5 +1,5 @@
-STATUS_START = -1
-STATUS_COMPLETE = -2
+from const import STATUS_COMPLETE, STATUS_START
+
 
 class RemoteFile:
     def __init__(self, fileobj, vessel, chunksize=1048576):
@@ -9,7 +9,8 @@ class RemoteFile:
 
     def getStatus(self):
         ls = self.vessel.connection._listdir(self.vessel.tempdir)
-        files = [f for f in ls if f.startswith(self.file.uuid) and f.endswith(".part")]
+        files = [f for f in ls if f.startswith(
+            self.file.uuid) and f.endswith(".part")]
 
         ids = [-1]
 
@@ -25,8 +26,8 @@ class RemoteFile:
         while count >= 0:
             if self.validateChunk(count):
                 return count
-            count -=1
-    
+            count -= 1
+
         return STATUS_START
 
     def validateChunk(self, count):

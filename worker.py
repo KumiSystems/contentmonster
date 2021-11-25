@@ -14,20 +14,21 @@ if __name__ == '__main__':
     config = MonsterConfig.fromFile(config_path)
 
     with Manager() as manager:
-        files = manager.list()
+        state = manager.dict()
+        state["files"] = manager.list()
 
         threads = []
 
         for vessel in config.vessels:
-            thread = VesselThread(vessel, files)
+            thread = VesselThread(vessel, state)
             thread.start()
             threads.append(thread)
 
         try:
-            shore = ShoreThread(files, config.directories)
+            shore = ShoreThread(state, config.directories)
             shore.run()
         except KeyboardInterrupt:
-                print("Keyboard interrupt received - stopping threads")
-                for thread in threads:
-                    thread.kill()
-                exit()
+            print("Keyboard interrupt received - stopping threads")
+            for thread in threads:
+                thread.kill()
+            exit()
