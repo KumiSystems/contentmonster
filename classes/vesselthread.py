@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from typing import NoReturn
 
 from classes.vessel import Vessel
 
@@ -7,7 +8,7 @@ import time
 class VesselThread(Process):
     """Thread processing uploads to a single vessel
     """
-    def __init__(self, vessel: Vessel, state: dict):
+    def __init__(self, vessel: Vessel, state: dict) -> None:
         """Initialize a new VesselThread
 
         Args:
@@ -18,7 +19,7 @@ class VesselThread(Process):
         self.vessel = vessel
         self._state = state
 
-    def run(self):
+    def run(self) -> NoReturn:
         """Run thread and process uploads to the vessel
         """
         print("Launched Vessel Thread for " + self.vessel.name)

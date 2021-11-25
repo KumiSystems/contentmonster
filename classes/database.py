@@ -133,6 +133,17 @@ class Database:
         if (result := cur.fetchone()):
             return result
 
+    def removeFile(self, directory, name: str) -> None:
+        """Remove a File from the database based on Directory and filename
+
+        Args:
+            directory (classes.directory.Directory): Directory object 
+              containing the File to remove
+            name (str): Filename of the File to remove
+        """
+        self._execute(
+            "DELETE FROM contentmonster_file WHERE directory = ? AND name = ?", (directory.name, name))
+
     def removeFileByUUID(self, fileuuid: str) -> None:
         """Remove a File from the database based on UUID
 
@@ -166,7 +177,7 @@ class Database:
         cur = self.getCursor()
         cur.execute(
             "SELECT file FROM contentmonster_file_log WHERE vessel = ?", (vessel.name,))
-        
+
         return [f[0] for f in cur.fetchall()]
 
     def migrate(self) -> None:
