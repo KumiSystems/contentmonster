@@ -53,6 +53,8 @@ class Directory:
     def getFiles(self) -> list[File]:
         """Get all Files in Directory
 
+        N.B.: Returns only Files that have a size greater than 0
+
         Returns:
             list: List of File objects for files within the Directory
         """
