@@ -51,8 +51,8 @@ class Vessel:
             port = config["Port"]
 
         if "Address" in config.keys():
-            return cls(config.name.split()[1], config["Address"], username, 
-                        password, passphrase, tempdir)
+            return cls(config.name.split()[1], config["Address"], username,
+                       password, passphrase, tempdir)
         else:
             raise ValueError("Definition for Vessel " +
                              config.name.split()[1] + " does not contain Address!")
@@ -107,17 +107,20 @@ class Vessel:
         db = Database()
         return db.getCompletionForVessel(self)
 
-    def currentUpload(self) -> File:
+    def currentUpload(self) -> Optional[File]:
         """Get the File that is currently being uploaded to this Vessel
 
         Returns:
             classes.file.File: File object representing the file currently
-              being uploaded
+              being uploaded, if any
         """
         db = Database()
-        directory, name, _ = db.getFileByUUID(
+        output = db.getFileByUUID(
             fileuuid := self.connection.getCurrentUploadUUID())
-        return File(name, directory, fileuuid)
+        
+        if output:
+            directory, name, _ = output
+            return File(name, directory, fileuuid)
 
     def clearTempDir(self) -> None:
         """Clean up the temporary directory on the Vessel 
