@@ -1,6 +1,6 @@
 import paramiko as pikuniku  # :P
 
-from paramiko.client import SSHClient
+from paramiko.client import SSHClient, WarningPolicy
 
 from io import BytesIO
 from pathlib import Path
@@ -23,7 +23,9 @@ class Connection:
         self._vessel = vessel
         self._client = SSHClient()
         self._client.load_system_host_keys()
-        self._client.connect(vessel.address)
+        self._client.set_missing_host_key_policy(WarningPolicy)
+        self._client.connect(vessel.address, vessel.username,
+                             vessel.password, passphrase=vessel.passphrase)
         self._transport = self._client.get_transport()
         self._transport.set_keepalive(10)
         self._sftp = self._client.open_sftp()

@@ -30,17 +30,32 @@ class Vessel:
         """
 
         tempdir = None
+        username = None
+        password = None
+        passphrase = None
 
         if "TempDir" in config.keys():
             tempdir = config["TempDir"]
 
+        if "Username" in config.keys():
+            username = config["Username"]
+
+        if "Password" in config.keys():
+            password = config["Password"]
+
+        if "Passphrase" in config.keys():
+            passphrase = config["Passphrase"]
+
         if "Address" in config.keys():
-            return cls(config.name.split()[1], config["Address"], tempdir)
+            return cls(config.name.split()[1], config["Address"], username, 
+                        password, passphrase, tempdir)
         else:
             raise ValueError("Definition for Vessel " +
                              config.name.split()[1] + " does not contain Address!")
 
-    def __init__(self, name: str, address: str, tempdir: Optional[Union[str, pathlib.Path]]) -> None:
+    def __init__(self, name: str, address: str, username: Optional[str] = None,
+                 password: Optional[str] = None, passphrase: Optional[str] = None,
+                 tempdir: Optional[Union[str, pathlib.Path]] = None) -> None:
         """Initialize new Vessel object
 
         Args:
@@ -52,6 +67,9 @@ class Vessel:
         self.name = name
         self.address = address
         self.tempdir = pathlib.Path(tempdir or "/tmp/.ContentMonster/")
+        self.username = username
+        self.password = password
+        self.passphrase = passphrase
         self._connection = None
         self._uploaded = self.getUploadedFromDB()  # Files already uploaded
 
