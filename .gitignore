@@ -3,5 +3,6 @@ __pycache__/
 *.swp
 settings.ini
 database.sqlite3
+database.sqlite3-journal
 venv/
 .vscode
