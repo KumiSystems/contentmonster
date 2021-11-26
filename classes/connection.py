@@ -25,7 +25,8 @@ class Connection:
         self._client.load_system_host_keys()
         self._client.set_missing_host_key_policy(WarningPolicy)
         self._client.connect(vessel.address, vessel.port, vessel.username,
-                             vessel.password, passphrase=vessel.passphrase)
+                             vessel.password, timeout=vessel.timeout,
+                             passphrase=vessel.passphrase)
         self._transport = self._client.get_transport()
         self._transport.set_keepalive(10)
         self._sftp = self._client.open_sftp()
@@ -96,6 +97,21 @@ class Connection:
         """
         return self._sftp.remove(str(path))
 
+    def assertTempDirectory(self) -> None:
+        """Make sure that the temp directory exists on the Vessel
+
+        Raises:
+            ValueError: Raised if the path is already in use on the vessel but
+              is not a directory.
+            IOError: Raised if the directory does not exist but cannot be 
+              created.
+        """
+        if not self._exists(self._vessel.tempdir):
+            self._mkdir(self._vessel.tempdir)
+        elif not self._isdir(self._vessel.tempdir):
+            raise ValueError(
+                f"{self._vessel.tempdir} exists but is not a directory on Vessel {self._vessel.name}!")        
+
     def assertDirectories(self, directory) -> None:
         """Make sure that destination and temp directories exist on the Vessel
 
@@ -157,7 +173,7 @@ class Connection:
         """
         path = path or (self._vessel.tempdir / chunk.getTempName())
         flo = BytesIO(chunk.data)
-        self._sftp.putfo(flo, path, len(chunk.data))
+        self._sftp.putfo(flo, str(path), len(chunk.data))
 
     def compileComplete(self, remotefile) -> None:
         """Build a complete File from uploaded Chunks.
@@ -221,8 +237,8 @@ class Connection:
             [type]: [description]
         """
         completefile = remotefile.file.getChunk(-1)
-        destination = remotefile.getFullPath()
-        self._sftp.rename(
+        destination = remotefile.file.getFullPath()
+        self._sftp.posix_rename(
             str(self._vessel.tempdir / completefile.getTempName()), str(destination))
 
         # Make sure that file has actually been created at destination

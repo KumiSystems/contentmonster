@@ -1,4 +1,4 @@
-from paramiko.ssh_exception import SSHException
+from paramiko.ssh_exception import SSHException, NoValidConnectionsError
 
 class retry:
     """Decorator used to automatically retry operations throwing exceptions
@@ -9,9 +9,10 @@ class retry:
         Args:
             exceptions (tuple, optional): A tuple containing exception classes
               that should be handled by the decorator. If none, handle only
-              paramiko.ssh_exception.SSHException. Defaults to None.
+              paramiko.ssh_exception.SSHException/NoValidConnectionsError. 
+              Defaults to None.
         """
-        self.exceptions = exceptions or (SSHException,)
+        self.exceptions = exceptions or (SSHException, NoValidConnectionsError)
     
     def __call__(self, f):
         """Return a function through the retry decorator

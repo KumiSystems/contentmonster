@@ -1,10 +1,13 @@
 from watchdog.events import (FileSystemEventHandler, FileSystemEvent,
-                             FileCreatedEvent, FileDeletedEvent, 
+                             FileCreatedEvent, FileDeletedEvent,
                              FileModifiedEvent, FileMovedEvent)
 
 from multiprocessing import Queue
 
+from classes.logger import Logger
+
 import os.path
+import time
 
 
 class DogHandler(FileSystemEventHandler):
@@ -22,6 +25,7 @@ class DogHandler(FileSystemEventHandler):
         super().__init__(*args, **kwargs)
         self._directory = directory
         self._queue = queue
+        self._logger = Logger()
 
     def dispatch(self, event: FileSystemEvent):
         """Dispatch events to the appropriate event handlers
@@ -39,7 +43,12 @@ class DogHandler(FileSystemEventHandler):
             event (watchdog.events.FileCreatedEvent): Event describing the
               created file
         """
-        self._queue.put((self._directory, os.path.basename(event.src_path)))
+        self._logger.debug(f"Detected creation event of {event.src_path}")
+
+        size = os.path.getsize(event.src_path)
+        time.sleep(5)
+        if size == os.path.getsize(event.src_path):
+            self._queue.put((self._directory, os.path.basename(event.src_path)))
 
     def on_modified(self, event: FileModifiedEvent):
         """Put file modification events on the queue
@@ -48,7 +57,12 @@ class DogHandler(FileSystemEventHandler):
             event (watchdog.events.FileModifiedEvent): Event describing the
               modified file
         """
-        self._queue.put((self._directory, os.path.basename(event.src_path)))
+        self._logger.debug(f"Detected modification event of {event.src_path}")
+
+        size = os.path.getsize(event.src_path)
+        time.sleep(5)
+        if size == os.path.getsize(event.src_path):
+            self._queue.put((self._directory, os.path.basename(event.src_path)))
 
     def on_moved(self, event: FileMovedEvent):
         """Put file move events on the queue
@@ -57,6 +71,8 @@ class DogHandler(FileSystemEventHandler):
             event (watchdog.events.FileMovedEvent): Event describing the moved
               file (source and destination)
         """
+        self._logger.debug(
+            f"Detected move event of {event.src_path} to {event.dest_path}")
         self._queue.put((self._directory, os.path.basename(event.src_path)))
         self._queue.put((self._directory, os.path.basename(event.dest_path)))
 
@@ -67,4 +83,5 @@ class DogHandler(FileSystemEventHandler):
             event (watchdog.events.FileDeletedEvent): Event describing the
               deleted file
         """
+        self._logger.debug(f"Detected deletion event of {event.src_path}")
         self._queue.put((self._directory, os.path.basename(event.src_path)))

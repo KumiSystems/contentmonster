@@ -59,7 +59,8 @@ class Vessel:
 
     def __init__(self, name: str, address: str, username: Optional[str] = None,
                  password: Optional[str] = None, passphrase: Optional[str] = None,
-                 port: Optional[int] = None, tempdir: Optional[Union[str, pathlib.Path]] = None) -> None:
+                 port: Optional[int] = None, timeout: Optional[int] = None,
+                 tempdir: Optional[Union[str, pathlib.Path]] = None) -> None:
         """Initialize new Vessel object
 
         Args:
@@ -75,6 +76,7 @@ class Vessel:
         self.password = password
         self.passphrase = passphrase
         self.port = port or 22
+        self.timeout = timeout or 10
         self._connection = None
         self._uploaded = self.getUploadedFromDB()  # Files already uploaded
 
@@ -89,8 +91,8 @@ class Vessel:
         if self._connection:
             try:
                 # ... check if it is up
-                self._connection._listdir()
-            except SSHException:
+                self._connection._listdir(".")
+            except (SSHException, OSError):
                 # ... and throw it away if it isn't
                 self._connection = None
 
@@ -107,20 +109,23 @@ class Vessel:
         db = Database()
         return db.getCompletionForVessel(self)
 
-    def currentUpload(self) -> Optional[File]:
+    def currentUpload(self) -> Optional[tuple[str, str, str]]:
         """Get the File that is currently being uploaded to this Vessel
 
         Returns:
-            classes.file.File: File object representing the file currently
-              being uploaded, if any
+            tuple: A tuple consisting of (directory, name, checksum), where
+              "directory" is the name of the Directory object the File is
+              located in, "name" is the filename (basename) of the File and
+              checksum is the SHA256 hash of the file at the time of insertion
+              into the database.  None is returned if no such record is found.
         """
+        self.assertTempDirectory() # After a reboot, the tempdir may be gone
+
         db = Database()
-        output = db.getFileByUUID(
-            fileuuid := self.connection.getCurrentUploadUUID())
-        
-        if output:
-            directory, name, _ = output
-            return File(name, directory, fileuuid)
+        output = db.getFileByUUID(self.connection.getCurrentUploadUUID())
+        del db
+
+        return output
 
     def clearTempDir(self) -> None:
         """Clean up the temporary directory on the Vessel 
@@ -138,7 +143,7 @@ class Vessel:
               Vessel configuration and name provided by Chunk object. Defaults
               to None.
         """
-        self.connection.pushChunk(chunk, path)
+        self.connection.pushChunk(chunk, str(path) if path else None)
 
     def compileComplete(self, remotefile) -> None:
         """Build a complete File from uploaded Chunks.
@@ -148,3 +153,29 @@ class Vessel:
               describing the uploaded File
         """
         self.connection.compileComplete(remotefile)
+
+    def assertDirectories(self, directory) -> None:
+        """Make sure that destination and temp directories exist on the Vessel
+
+        Args:
+            directory (classes.directory.Directory): Directory object
+              representing the directory to check
+
+        Raises:
+            ValueError: Raised if a path is already in use on the vessel but
+              not a directory.
+            IOError: Raised if a directory that does not exist cannot be 
+              created.
+        """
+        self.connection.assertDirectories(directory)
+
+    def assertTempDirectory(self) -> None:
+        """Make sure that the temp directory exists on the Vessel
+
+        Raises:
+            ValueError: Raised if the path is already in use on the vessel but
+              is not a directory.
+            IOError: Raised if the directory does not exist but cannot be 
+              created.
+        """
+        self.connection.assertTempDirectory()

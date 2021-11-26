@@ -26,7 +26,7 @@ class MonsterConfig:
             raise ValueError("Config file does not contain a MONSTER section!")
 
         try:
-            self.chunksize = parser["MONSTER"]["ChunkSize"]
+            self.chunksize = int(parser["MONSTER"]["ChunkSize"])
         except KeyError:
             pass
 

@@ -2,6 +2,7 @@ from classes.config import MonsterConfig
 from classes.doghandler import DogHandler
 from classes.directory import Directory
 from classes.database import Database
+from classes.logger import Logger
 
 from watchdog.observers import Observer
 
@@ -25,6 +26,7 @@ class ShoreThread(Process):
         self._dogs = []
         self._state = state
         self.queue = Queue()
+        self._logger = Logger()
 
     def getAllFiles(self) -> list:
         """Return File objects for all files in all Directories
@@ -32,9 +34,12 @@ class ShoreThread(Process):
         Returns:
             list: List of all File objects discovered
         """
+        self._logger.debug("Getting all files from Shore")
+
         files = []
 
         for directory in self._state["config"].directories:
+            self._logger.debug(f"Getting all files in {directory.name}")
             for f in directory.getFiles():
                 files.append(f)
 
@@ -43,13 +48,14 @@ class ShoreThread(Process):
     def clearFiles(self) -> None:
         """Clear the files variable in the application state
         """
+        self._logger.debug("Clearing global files variable")
         del self._state["files"][:]
 
     def monitor(self) -> None:
         """Initialize monitoring of Directories specified in configuration
         """
         for directory in self._state["config"].directories:
-            print("Creating dog for " + str(directory.location))
+            self._logger.debug("Creating dog for " + str(directory.location))
             handler = DogHandler(directory, self.queue)
             dog = Observer()
             dog.schedule(handler, str(directory.location), False)
@@ -59,8 +65,11 @@ class ShoreThread(Process):
     def run(self) -> NoReturn:
         """Launch the ShoreThread and start monitoring for file changes
         """
-        print("Launched Shore Thread")
-        self.getAllFiles()
+        self._logger.info("Launched Shore Thread")
+
+        for f in self.getAllFiles():
+            self._state["files"].append(f)
+
         self.monitor()
 
         while True:
@@ -70,6 +79,7 @@ class ShoreThread(Process):
     def joinDogs(self) -> None:
         """Join observers to receive updates on the queue
         """
+        self._logger.debug("Joining dogs")
         for dog in self._dogs:
             dog.join(1)
 
@@ -80,12 +90,23 @@ class ShoreThread(Process):
             directory (Directory): Directory (previously) containing the File
             name (str): Filename of the deleted File
         """
-        # Remove file from processing queue
-        for f in self._state["files"]:
-            if f.directory == directory and f.name == name:
-                del(f)
+        self._logger.debug(f"Purging file {name} from {directory.name}")
 
-        # Remove file from database        
+        # Remove file from processing queue
+        outlist = []
+        for f in self._state["files"]:
+            if f.directory.name == directory.name and f.name == name:
+                self._logger.debug(f"Found {name} in files queue, deleting.")
+            else:
+                outlist.append(f)
+
+        self.clearFiles()
+        
+        for f in outlist:
+            self._state["files"].append(f)
+
+        # Remove file from database
+        self._logger.debug(f"Purging file {name} from database")
         db = Database()
         db.removeFile(directory, name)
 
@@ -95,19 +116,27 @@ class ShoreThread(Process):
         Args:
             fileobj (classes.file.File): File object to add to the queue
         """
-        found = False
+        self._logger.debug(f"Adding file {fileobj.name} to directory {fileobj.directory.name}")
+
+        outlist = []
 
         for f in self._state["files"]:
-            if f.directory == fileobj.directory and f.name == fileobj.name:
+            if f.directory.name == fileobj.directory.name and f.name == fileobj.name:
+                self._logger.debug(f"File {fileobj.name} already in processing queue")
                 if f.uuid != fileobj.uuid:
-                    del(f)
+                    self._logger.debug("UUID does not match - deleting entry")
                 else:
-                    found = True
+                    self._logger.debug("Found duplicate - deleting")
+            else:
+                outlist.append(f)
 
-        if not found:
-            # Do not queue file if it is of size 0
-            if os.path.getsize(str(fileobj.getFullPath())):
-                self._state["files"].append(fileobj)
+        self._logger.debug(f"File {fileobj.name} not in processing queue (anymore) - adding")
+        outlist.append(fileobj)
+
+        self.clearFiles()
+
+        for f in outlist:
+            self._state["files"].append(f)
 
     def processFile(self, directory: Directory, name: str) -> None:
         """Process a file entry from the observer queue
@@ -118,6 +147,7 @@ class ShoreThread(Process):
             name (str): Filename of the created, deleted, modified or moved 
               File
         """
+        self._logger.debug(f"Processing change to file {name} in directory {directory.name}")
         if (fileobj := directory.getFile(name)):
             self.addFile(fileobj)
         else:
@@ -130,12 +160,14 @@ class ShoreThread(Process):
         "directory" is a Directory object, and "basename" is the name of a
         File that has been created, moved, modified or deleted.
         """
+        self._logger.debug("Waiting for new changes...")
         directory, basename = self.queue.get() # Will block until an event is found
         self.processFile(directory, basename)
 
     def terminate(self, *args, **kwargs) -> NoReturn:
         """Terminate observer threads, then terminate self
         """
+        self._logger.info("Terminating dogs and shore thread")
         for dog in self._dogs:
             dog.terminate()
             dog.join()

@@ -28,7 +28,7 @@ class File:
         self.directory = directory
 
         if not self.exists():
-            raise FileNotFoundError(f"File {self.name} does not exist in {self.directory}!")
+            raise FileNotFoundError(f"File {self.name} does not exist in {self.directory.name}!")
 
         self.uuid = uuid or self.getUUID()
 
