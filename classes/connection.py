@@ -82,7 +82,7 @@ class Connection:
         Returns:
             list: List of the names of files (str) located at the provided path
         """
-        return self._sftp.listdir(str(path) if path else None)
+        return self._sftp.listdir(str(path) if path else ".")
 
     def _remove(self, path: Union[str, Path]) -> None:
         """Remove a file from the Vessel
