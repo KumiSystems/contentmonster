@@ -56,7 +56,8 @@ class Directory:
         Returns:
             list: List of File objects for files within the Directory
         """
-        files = [f for f in os.listdir(self.location) if os.path.isfile]
+        files = [f for f in os.listdir(self.location) if os.path.isfile(
+            self.location / f) and os.path.getsize(self.location / f)]
         return [File(f, self) for f in files]
 
     def getFile(self, name: str) -> Optional[File]:
