@@ -24,7 +24,7 @@ class Connection:
         self._client = SSHClient()
         self._client.load_system_host_keys()
         self._client.set_missing_host_key_policy(WarningPolicy)
-        self._client.connect(vessel.address, vessel.username,
+        self._client.connect(vessel.address, vessel.port, vessel.username,
                              vessel.password, passphrase=vessel.passphrase)
         self._transport = self._client.get_transport()
         self._transport.set_keepalive(10)

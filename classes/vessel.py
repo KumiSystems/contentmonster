@@ -33,6 +33,7 @@ class Vessel:
         username = None
         password = None
         passphrase = None
+        port = 22
 
         if "TempDir" in config.keys():
             tempdir = config["TempDir"]
@@ -46,6 +47,9 @@ class Vessel:
         if "Passphrase" in config.keys():
             passphrase = config["Passphrase"]
 
+        if "Port" in config.keys():
+            port = config["Port"]
+
         if "Address" in config.keys():
             return cls(config.name.split()[1], config["Address"], username, 
                         password, passphrase, tempdir)
@@ -55,7 +59,7 @@ class Vessel:
 
     def __init__(self, name: str, address: str, username: Optional[str] = None,
                  password: Optional[str] = None, passphrase: Optional[str] = None,
-                 tempdir: Optional[Union[str, pathlib.Path]] = None) -> None:
+                 port: Optional[int] = None, tempdir: Optional[Union[str, pathlib.Path]] = None) -> None:
         """Initialize new Vessel object
 
         Args:
@@ -70,6 +74,7 @@ class Vessel:
         self.username = username
         self.password = password
         self.passphrase = passphrase
+        self.port = port or 22
         self._connection = None
         self._uploaded = self.getUploadedFromDB()  # Files already uploaded
 
