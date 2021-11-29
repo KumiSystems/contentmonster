@@ -117,6 +117,8 @@ class VesselThread(Process):
                 self.vessel._uploaded.append(fileobj.uuid)
                 self._logger.debug(
                     f"Moved {fileobj.name} to its final destination on {self.vessel.name} - done!")
+
+                self.checkFileCompletion(fileobj)
                 return
 
             nextchunk = 0 if status == STATUS_START else status + 1
@@ -138,6 +140,17 @@ class VesselThread(Process):
                 self._logger.debug(
                     f"No more data to upload to vessel {self.vessel.name} for file {fileobj.name} - compiling")
                 self.vessel.compileComplete(remotefile)
+
+    def checkFileCompletion(self, fileobj: File) -> None:
+        db = Database()
+        complete = db.getCompletionByFileUUID()
+        del(db)
+
+        for vessel in [v.name for v in self._state["config"].vessels]:
+            if vessel not in complete:
+                return
+
+        fileobj.moveCompleted()
 
     def processQueue(self) -> Optional[str]:
         """Return a file from the processing queue

@@ -46,9 +46,22 @@ class Directory:
 
         if os.path.isdir(location):
             self.location = pathlib.Path(location)
+            self.assertCompletedDirectory()
         else:
+            location = str(location)
             raise ValueError(
                 f"Location {location} for Directory {name} does not exist or is not a directory.")
+
+    @property
+    def completeddir(self):
+        return self.location / "completed"
+
+    def assertCompletedDirectory(self):
+        if not os.path.isdir(self.completeddir):
+            if os.path.isfile(self.completeddir):
+                raise FileExistsError("Cannot create directory %s - path exists but is not a directory!" % str(self.completeddir))
+
+            os.path.mkdir(self.completeddir)
 
     def getFiles(self) -> list[File]:
         """Get all Files in Directory
