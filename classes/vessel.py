@@ -34,6 +34,8 @@ class Vessel:
         password = None
         passphrase = None
         port = 22
+        timeout = None
+        ignoredirs = []
 
         if "TempDir" in config.keys():
             tempdir = config["TempDir"]
@@ -49,13 +51,16 @@ class Vessel:
 
         if "Port" in config.keys():
             port = config["Port"]
-            
+
+        if "Timeout" in config.keys():
+            timeout = config["Timeout"]
+
         if "IgnoreDirs" in config.keys():
             ignoredirs = [d.strip() for d in config["IgnoreDirs"].split(",")]
 
         if "Address" in config.keys():
             return cls(config.name.split()[1], config["Address"], username,
-                       password, passphrase, tempdir, ignoredirs)
+                       password, passphrase, port, timeout, tempdir, ignoredirs)
         else:
             raise ValueError("Definition for Vessel " +
                              config.name.split()[1] + " does not contain Address!")
