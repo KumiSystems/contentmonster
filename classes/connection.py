@@ -125,7 +125,7 @@ class Connection:
             IOError: Raised if a directory that does not exist cannot be 
               created.
         """
-        for d in [directory, self._vessel.tempdir]:
+        for d in [directory.location, self._vessel.tempdir]:
             if not self._exists(d):
                 self._mkdir(d)
             elif not self._isdir(d):
