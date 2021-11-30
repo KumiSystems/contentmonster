@@ -45,9 +45,10 @@ class VesselThread(Process):
     @retry()
     def assertDirectories(self) -> None:
         for directory in self._state["config"].directories:
-            print(
-                f"Making sure directory {directory.name} exists on Vessel {self.vessel.name}")
-            self.vessel.connection.assertDirectories(directory)
+            if not directory.name in self.vessel._ignoredirs:
+                print(
+                    f"Making sure directory {directory.name} exists on Vessel {self.vessel.name}")
+                self.vessel.connection.assertDirectories(directory)
 
     @retry()
     def upload(self) -> None:
@@ -72,7 +73,7 @@ class VesselThread(Process):
 
             if not directory:
                 self._logger.debug(
-                    f"Directory {dirname} not specified in config - deleting File from Vessel {self.name}")
+                    f"Directory {dirname} not specified in config - deleting File from Vessel {self.vessel.name}")
                 self.vessel.clearTempDir()
                 return
 
@@ -86,6 +87,17 @@ class VesselThread(Process):
 
         else:
             fileobj = current
+            
+        if fileobj.directory.name in self.vessel._ignoredirs:
+            self._logger.debug(
+                f"Not replicating Directory {fileobj.directory.name} to Vessel {self.vessel.name} - marking complete")
+            
+            db = Database()
+            db.logCompletion(fileobj, self.vessel)
+            del(db)
+            
+            self.checkFileCompletion(fileobj, self.vessel)
+            return
 
         remotefile = RemoteFile(fileobj, self.vessel,
                                 self._state["config"].chunksize)
@@ -146,10 +158,12 @@ class VesselThread(Process):
         complete = db.getCompletionByFileUUID(fileobj.uuid)
         del(db)
 
-        for vessel in [v.name for v in self._state["config"].vessels]:
-            if vessel not in complete:
+        for vessel in self._state["config"].vessels:
+            if vessel.name not in complete and fileobj.directory.name not in vessel._ignoredirs:
                 return
 
+        self._logger.debug(
+            f"File {fileobj.name} from Directory {fileobj.directory.name} transferred to all Vessels. Moving out of replication directory.")
         fileobj.moveCompleted()
 
     def processQueue(self) -> Optional[str]:

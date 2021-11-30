@@ -50,7 +50,7 @@ Note: Currently, the same Location value is used on both the shore and the vesse
 
 ### Vessel
 
-You can configure as many vessels to replicate your files to as you want by adding multiple `Vessel` sections. All configured directories are replicated to all vessels. If you want to use an SSH key to authenticate on the vessels, make sure that it is picked up by the local SSH agent (i.e. you can login using the key when connecting with the `ssh` command).
+You can configure as many vessels to replicate your files to as you want by adding multiple `Vessel` sections. All configured directories are replicated to all vessels by default, but you can use the IgnoreDirs directive to exclude a directory from a given vessel. If you want to use an SSH key to authenticate on the vessels, make sure that it is picked up by the local SSH agent (i.e. you can login using the key when connecting with the `ssh` command).
 
 ```ini
 [Vessel samplevessel]  # Each vessel needs a unique name - here: "samplevessel"
@@ -60,9 +60,8 @@ Username = replication  # Username to authenticate as on the vessel (default: sa
 Password = verysecret  # Password to use to authenticate on the vessel (default: none, use SSH key)
 Passphrase = moresecret  # Passphrase of the SSH key you use to authenticate (default: none, key has no passphrase)
 Port = 22  # Port of the SSH server on the vessel (default: 22)
+IgnoreDirs = sampledir, anotherdir  # Names of directories *not* to replicate to this vessel, separated by commas
 ```
-
-Note: All configured directories are replicated to all of the configured vessels. This may be configurable in a future version.
 
 ## Running
 

@@ -49,10 +49,13 @@ class Vessel:
 
         if "Port" in config.keys():
             port = config["Port"]
+            
+        if "IgnoreDirs" in config.keys():
+            ignoredirs = [d.strip() for d in config["IgnoreDirs"].split(",")]
 
         if "Address" in config.keys():
             return cls(config.name.split()[1], config["Address"], username,
-                       password, passphrase, tempdir)
+                       password, passphrase, tempdir, ignoredirs)
         else:
             raise ValueError("Definition for Vessel " +
                              config.name.split()[1] + " does not contain Address!")
@@ -60,7 +63,8 @@ class Vessel:
     def __init__(self, name: str, address: str, username: Optional[str] = None,
                  password: Optional[str] = None, passphrase: Optional[str] = None,
                  port: Optional[int] = None, timeout: Optional[int] = None,
-                 tempdir: Optional[Union[str, pathlib.Path]] = None) -> None:
+                 tempdir: Optional[Union[str, pathlib.Path]] = None,
+                 ignoredirs: list[Optional[str]] = []) -> None:
         """Initialize new Vessel object
 
         Args:
@@ -79,6 +83,7 @@ class Vessel:
         self.timeout = timeout or 10
         self._connection = None
         self._uploaded = self.getUploadedFromDB()  # Files already uploaded
+        self._ignoredirs = ignoredirs  # Directories not replicated to this vessel
 
     @property
     def connection(self) -> Connection:
