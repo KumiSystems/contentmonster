@@ -1,9 +1,18 @@
 import logging
+import threading
+
+from datetime import datetime
 
 
 class Logger:
-    def debug(self, message):
-        print(message)
+    @staticmethod
+    def _format(message: str, severity: str) -> str:
+        thread = threading.current_thread().name
+        datestr = str(datetime.now())
+        return f"{datestr} - {thread} - {severity} - {message}"
 
-    def info(self, message):
-        print(message)
+    def debug(self, message: str) -> None:
+        print(self.__class__()._format(message, "DEBUG"))
+
+    def info(self, message: str) -> None:
+        print(self.__class__()._format(message, "INFO"))
