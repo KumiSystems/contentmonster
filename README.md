@@ -92,7 +92,7 @@ After=syslog.target network.target
 Type=simple
 User=replication
 WorkingDirectory=/opt/ContentMonster/
-ExecStart=/opt/ContentMonster/venv/bin/python /opt/ContentMonster/worker.py
+ExecStart=/opt/ContentMonster/venv/bin/python -u /opt/ContentMonster/worker.py
 Restart=on-abort
 
 [Install]
