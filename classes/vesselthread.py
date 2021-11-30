@@ -97,7 +97,7 @@ class VesselThread(Process):
             del(db)
             
             self.vessel._uploaded.append(fileobj.uuid)
-            self.checkFileCompletion(fileobj, self.vessel)
+            self.checkFileCompletion(fileobj)
             return
 
         remotefile = RemoteFile(fileobj, self.vessel,
