@@ -26,6 +26,11 @@ class MonsterConfig:
             raise ValueError("Config file does not contain a MONSTER section!")
 
         try:
+            self.database = parser["MONSTER"]["Database"]
+        except KeyError:
+            pass
+
+        try:
             self.chunksize = int(parser["MONSTER"]["ChunkSize"])
         except KeyError:
             pass
@@ -46,3 +51,4 @@ class MonsterConfig:
         self.directories = []
         self.vessels = []
         self.chunksize = 10485760 # Default: 10 MiB
+        self.database = None # Default: "database.sqlite3" in base directory
