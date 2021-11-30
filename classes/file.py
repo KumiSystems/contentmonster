@@ -41,7 +41,7 @@ class File:
         return os.path.isfile(self.directory.location / self.name)
 
     def moveCompleted(self) -> None:
-        self.getFullPath.rename(self.directory.completeddir / self.name)
+        self.getFullPath().rename(self.directory.completeddir / self.name)
 
     def getUUID(self) -> str:
         """Return unique identifier for this File object

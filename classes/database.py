@@ -180,9 +180,9 @@ class Database:
 
         return [f[0] for f in cur.fetchall()]
 
-    def getCompletionByFileUUID(self, fileuuid: str) -> List[Optional[str]]:
+    def getCompletionByFileUUID(self, fileuuid: str) -> list[Optional[str]]:
         cur = self.getCursor()
-        cur.execute("SELECT vessel FROM contentmonster_file_log WHERE file = ?", (fileuuid))
+        cur.execute("SELECT vessel FROM contentmonster_file_log WHERE file = ?", (fileuuid,))
 
         return [v[0] for v in cur.fetchall()]
 

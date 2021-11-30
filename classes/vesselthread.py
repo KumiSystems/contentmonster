@@ -143,7 +143,7 @@ class VesselThread(Process):
 
     def checkFileCompletion(self, fileobj: File) -> None:
         db = Database()
-        complete = db.getCompletionByFileUUID()
+        complete = db.getCompletionByFileUUID(fileobj.uuid)
         del(db)
 
         for vessel in [v.name for v in self._state["config"].vessels]:

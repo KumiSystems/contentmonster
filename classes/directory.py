@@ -61,7 +61,7 @@ class Directory:
             if os.path.isfile(self.completeddir):
                 raise FileExistsError("Cannot create directory %s - path exists but is not a directory!" % str(self.completeddir))
 
-            os.path.mkdir(self.completeddir)
+            os.mkdir(self.completeddir)
 
     def getFiles(self) -> list[File]:
         """Get all Files in Directory
