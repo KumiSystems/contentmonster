@@ -96,6 +96,7 @@ class VesselThread(Process):
             db.logCompletion(fileobj, self.vessel)
             del(db)
             
+            self.vessel._uploaded.append(fileobj.uuid)
             self.checkFileCompletion(fileobj, self.vessel)
             return
 
