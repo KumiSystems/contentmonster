@@ -31,22 +31,22 @@ class VesselThread(Process):
     def run(self) -> NoReturn:
         """Run thread and process uploads to the vessel
         """
-        print("Launched Vessel Thread for " + self.vessel.name)
+        self._logger.debug("Launched Vessel Thread for " + self.vessel.name)
         self.assertDirectories()
         while True:
             try:
                 self.upload()
                 time.sleep(5)
             except Exception as e:
-                print("An exception occurred in the Vessel Thread for " +
+                self._logger.error("An exception occurred in the Vessel Thread for " +
                       self.vessel.name)
-                print(repr(e))
+                self._logger.error(repr(e))
 
     @retry()
     def assertDirectories(self) -> None:
         for directory in self._state["config"].directories:
             if not directory.name in self.vessel._ignoredirs:
-                print(
+                self._logger.debug(
                     f"Making sure directory {directory.name} exists on Vessel {self.vessel.name}")
                 self.vessel.connection.assertDirectories(directory)
 

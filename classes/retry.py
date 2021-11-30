@@ -1,6 +1,9 @@
 from paramiko.ssh_exception import SSHException, NoValidConnectionsError
 from socket import timeout
 
+from classes.logger import Logger
+
+
 class retry:
     """Decorator used to automatically retry operations throwing exceptions
     """
@@ -15,6 +18,7 @@ class retry:
         """
         self.exceptions = exceptions or (SSHException, NoValidConnectionsError,
                                          timeout, TimeoutError)
+        self._logger = Logger()
     
     def __call__(self, f):
         """Return a function through the retry decorator
@@ -30,6 +34,6 @@ class retry:
                 try:
                     return f(*args, **kwargs)
                 except self.exceptions as e:
-                    print("Caught expected exception: " + repr(e))
+                    self._logger.info("Caught expected exception: " + repr(e))
 
         return wrapped_f

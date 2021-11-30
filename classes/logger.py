@@ -16,3 +16,6 @@ class Logger:
 
     def info(self, message: str) -> None:
         print(self.__class__()._format(message, "INFO"))
+
+    def error(self, message: str) -> None:
+        print(self.__class__()._format(message, "ERROR"))
