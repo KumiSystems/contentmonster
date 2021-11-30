@@ -21,7 +21,6 @@ class DogHandler(FileSystemEventHandler):
             directory (classes.directory.Directory): Directory to watch
             queue (multiprocessing.Queue): Queue to put detected events on
         """
-        print("Initialized")
         super().__init__(*args, **kwargs)
         self._directory = directory
         self._queue = queue
