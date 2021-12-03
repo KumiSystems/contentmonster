@@ -130,13 +130,30 @@ class ShoreThread(Process):
             else:
                 outlist.append(f)
 
-        self._logger.debug(f"File {fileobj.name} not in processing queue (anymore) - adding")
-        outlist.append(fileobj)
+        if self.checkFileCompletion(fileobj):
+            self._logger.debug(f"File {fileobj.name} already transferred to all Vessels - not re-adding to queue")
+        else:
+            self._logger.debug(f"File {fileobj.name} not in processing queue (anymore) - adding")
+            outlist.append(fileobj)
 
         self.clearFiles()
 
         for f in outlist:
             self._state["files"].append(f)
+
+    def checkFileCompletion(self, fileobj: File) -> bool:
+        db = Database()
+        complete = db.getCompletionByFileUUID(fileobj.uuid)
+        del(db)
+
+        for vessel in self._state["config"].vessels:
+            if vessel.name not in complete and fileobj.directory.name not in vessel._ignoredirs:
+                return False
+
+        if fileobj.exists():
+            fileobj.moveCompleted()
+            
+        return True
 
     def processFile(self, directory: Directory, name: str) -> None:
         """Process a file entry from the observer queue

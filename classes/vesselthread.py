@@ -153,7 +153,9 @@ class VesselThread(Process):
 
         self._logger.debug(
             f"File {fileobj.name} from Directory {fileobj.directory.name} transferred to all Vessels. Moving out of replication directory.")
-        fileobj.moveCompleted()
+
+        if fileobj.exists():
+            fileobj.moveCompleted()
 
     def processQueue(self) -> Optional[str]:
         """Return a file from the processing queue
