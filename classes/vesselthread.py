@@ -39,7 +39,7 @@ class VesselThread(Process):
                 time.sleep(5)
             except Exception as e:
                 self._logger.error("An exception occurred in the Vessel Thread for " +
-                      self.vessel.name)
+                                   self.vessel.name)
                 self._logger.error(repr(e))
 
     @retry()
@@ -87,18 +87,6 @@ class VesselThread(Process):
 
         else:
             fileobj = current
-            
-        if fileobj.directory.name in self.vessel._ignoredirs:
-            self._logger.debug(
-                f"Not replicating Directory {fileobj.directory.name} to Vessel {self.vessel.name} - marking complete")
-            
-            db = Database()
-            db.logCompletion(fileobj, self.vessel)
-            del(db)
-            
-            self.vessel._uploaded.append(fileobj.uuid)
-            self.checkFileCompletion(fileobj)
-            return
 
         remotefile = RemoteFile(fileobj, self.vessel,
                                 self._state["config"].chunksize)
@@ -173,12 +161,16 @@ class VesselThread(Process):
         self._logger.debug(
             f"Trying to fetch new file for vessel {self.vessel.name} from queue")
         for f in self._state["files"]:
-            if not f.uuid in self.vessel._uploaded:
+            if (not (f.uuid in self.vessel._uploaded)) and (not (f.directory.name in self.vessel._ignoredirs)):
                 self._logger.debug(
                     f"Using file {f.name} for vessel {self.vessel.name}")
                 return f
+            if f.uuid in self.vessel._uploaded:
+                reason = "already uploaded"
+            else:
+                reason = "Directory ignored"
             self._logger.debug(
-                f"Disregarding file {f.name} for vessel {self.vessel.name} - already uploaded")
+                f"Disregarding file {f.name} for vessel {self.vessel.name} - {reason}")
 
         self._logger.debug(
             f"Didn't find any new files for vessel {self.vessel.name}")
