@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "contentmonster"
+version = "0.0.1"
+authors = [
+  { name="Kumi Systems e.U.", email="office@kumi.systems" },
+]
+description = "File replicator"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "paramiko",
+    "watchdog"
+]
+
+[project.urls]
+"Homepage" = "https://kumig.it/kumisystems/contentmonster"
+"Bug Tracker" = "https://kumig.it/kumisystems/contentmonster/issues"

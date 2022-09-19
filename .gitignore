@@ -6,3 +6,4 @@ database.sqlite3
 database.sqlite3-journal
 venv/
 .vscode
+dist/
