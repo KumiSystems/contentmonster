@@ -89,9 +89,9 @@ class Vessel:
         self.port = port or 22
         self.timeout = timeout or 10
         self._connection = None
+        self._dbclass = dbclass
         self._uploaded = self.getUploadedFromDB()  # Files already uploaded
         self._ignoredirs = ignoredirs  # Directories not replicated to this vessel
-        self._dbclass = dbclass
 
     @property
     def connection(self) -> Connection:
