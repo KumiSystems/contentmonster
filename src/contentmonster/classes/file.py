@@ -1,5 +1,5 @@
-from classes.chunk import Chunk
-from classes.database import Database
+from .chunk import Chunk
+from .database import Database
 
 from typing import Optional
 

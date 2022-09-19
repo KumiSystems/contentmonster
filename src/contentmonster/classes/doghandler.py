@@ -4,7 +4,7 @@ from watchdog.events import (FileSystemEventHandler, FileSystemEvent,
 
 from multiprocessing import Queue
 
-from classes.logger import Logger
+from .logger import Logger
 
 import os.path
 import time

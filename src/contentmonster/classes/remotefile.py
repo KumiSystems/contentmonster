@@ -1,4 +1,4 @@
-from const import STATUS_COMPLETE, STATUS_START
+from ..const import STATUS_COMPLETE, STATUS_START
 
 
 class RemoteFile:

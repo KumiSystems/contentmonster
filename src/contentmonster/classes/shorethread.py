@@ -1,8 +1,8 @@
-from classes.config import MonsterConfig
-from classes.doghandler import DogHandler
-from classes.directory import Directory
-from classes.database import Database
-from classes.logger import Logger
+from .config import MonsterConfig
+from .doghandler import DogHandler
+from .directory import Directory
+from .database import Database
+from .logger import Logger
 
 from watchdog.observers import Observer
 

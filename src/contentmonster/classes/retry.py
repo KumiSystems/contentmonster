@@ -1,7 +1,7 @@
 from paramiko.ssh_exception import SSHException, NoValidConnectionsError
 from socket import timeout
 
-from classes.logger import Logger
+from .logger import Logger
 
 
 class retry:

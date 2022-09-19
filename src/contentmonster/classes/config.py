@@ -3,9 +3,9 @@ import configparser
 from pathlib import Path
 from typing import Union
 
-from classes.vessel import Vessel
-from classes.directory import Directory
-from classes.database import Database
+from .vessel import Vessel
+from .directory import Directory
+from .database import Database
 
 
 class MonsterConfig:

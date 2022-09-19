@@ -1,6 +1,6 @@
-from classes.connection import Connection
-from classes.database import Database
-from classes.file import File
+from .connection import Connection
+from .database import Database
+from .file import File
 
 from paramiko.ssh_exception import SSHException
 

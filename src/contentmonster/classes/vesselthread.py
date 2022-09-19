@@ -1,13 +1,13 @@
 from multiprocessing import Process
 from typing import NoReturn, Optional
 
-from classes.vessel import Vessel
-from classes.remotefile import RemoteFile
-from classes.retry import retry
-from classes.database import Database
-from classes.logger import Logger
-from classes.file import File
-from const import STATUS_COMPLETE, STATUS_START
+from .vessel import Vessel
+from .remotefile import RemoteFile
+from .retry import retry
+from .database import Database
+from .logger import Logger
+from .file import File
+from ..const import STATUS_COMPLETE, STATUS_START
 
 import time
 

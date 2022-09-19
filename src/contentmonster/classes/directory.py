@@ -1,4 +1,4 @@
-from classes.file import File
+from .file import File
 
 import os
 import pathlib

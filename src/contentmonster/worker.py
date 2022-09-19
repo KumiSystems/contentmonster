@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from classes.config import MonsterConfig
-from classes.vesselthread import VesselThread
-from classes.shorethread import ShoreThread
+from .classes.config import MonsterConfig
+from .classes.vesselthread import VesselThread
+from .classes.shorethread import ShoreThread
 
 from multiprocessing import Manager
 
