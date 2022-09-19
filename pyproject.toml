@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "contentmonster"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Kumi Systems e.U.", email="office@kumi.systems" },
 ]
