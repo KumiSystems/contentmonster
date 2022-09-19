@@ -16,7 +16,7 @@ class VesselThread(Process):
     """Thread processing uploads to a single vessel
     """
 
-    def __init__(self, vessel: Vessel, state: dict) -> None:
+    def __init__(self, vessel: Vessel, state: dict, dbclass: type = Database) -> None:
         """Initialize a new VesselThread
 
         Args:
@@ -27,6 +27,7 @@ class VesselThread(Process):
         self.vessel = vessel
         self._state = state
         self._logger = Logger()
+        self._dbclass = dbclass
 
     def run(self) -> NoReturn:
         """Run thread and process uploads to the vessel
@@ -95,7 +96,7 @@ class VesselThread(Process):
             f"Start processing file {fileobj.name} in directory {fileobj.directory.name} on vessel {self.vessel.name}")
 
         while True:
-            db = Database()
+            db = self._dbclass()
             if not db.getFileByUUID(fileobj.uuid):
                 self._logger.debug(
                     f"File {fileobj.name} in directory {fileobj.directory.name} does not exist anymore - deleting from {self.vessel.name}")
@@ -111,7 +112,7 @@ class VesselThread(Process):
                     f"File {fileobj.name} uploaded to vessel {self.vessel.name} completely - finalizing")
                 remotefile.finalizeUpload()
 
-                db = Database()
+                db = self._dbclass()
                 db.logCompletion(fileobj, self.vessel)
                 del(db)
 
@@ -143,7 +144,7 @@ class VesselThread(Process):
                 self.vessel.compileComplete(remotefile)
 
     def checkFileCompletion(self, fileobj: File) -> None:
-        db = Database()
+        db = self._dbclass()
         complete = db.getCompletionByFileUUID(fileobj.uuid)
         del(db)
 

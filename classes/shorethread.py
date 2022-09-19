@@ -16,7 +16,7 @@ import os.path
 class ShoreThread(Process):
     """Thread handling the discovery of shore-side file changes
     """
-    def __init__(self, state: dict) -> None:
+    def __init__(self, state: dict, dbclass: type = Database) -> None:
         """Create a new ShoreThread object
 
         Args:
@@ -27,6 +27,7 @@ class ShoreThread(Process):
         self._state = state
         self.queue = Queue()
         self._logger = Logger()
+        self._dbclass = dbclass
 
     def getAllFiles(self) -> list:
         """Return File objects for all files in all Directories
@@ -107,7 +108,7 @@ class ShoreThread(Process):
 
         # Remove file from database
         self._logger.debug(f"Purging file {name} from database")
-        db = Database()
+        db = self._dbclass()
         db.removeFile(directory, name)
 
     def addFile(self, fileobj):
@@ -142,7 +143,7 @@ class ShoreThread(Process):
             self._state["files"].append(f)
 
     def checkFileCompletion(self, fileobj: File) -> bool:
-        db = Database()
+        db = self._dbclass()
         complete = db.getCompletionByFileUUID(fileobj.uuid)
         del(db)
 

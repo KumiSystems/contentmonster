@@ -5,15 +5,18 @@ from typing import Union
 
 from classes.vessel import Vessel
 from classes.directory import Directory
+from classes.database import Database
 
 
 class MonsterConfig:
-    def readFile(self, path: Union[str, Path]) -> None:
+    def readFile(self, path: Union[str, Path], dbclass: type = Database) -> None:
         """Read .ini file into MonsterConfig object
 
         Args:
             path (str, pathlib.Path): Location of the .ini file to read
               (absolute or relative to the working directory)
+            dbclass (type): Class to use for database connections. Defaults to
+              built-in Database using sqlite3.
 
         Raises:
             ValueError: Raised if the passed file is not a ContentMonster .ini
@@ -43,12 +46,13 @@ class MonsterConfig:
 
             # Read Vessels from the config file
             elif section.startswith("Vessel"):
-                self.vessels.append(Vessel.fromConfig(parser[section]))
+                self.vessels.append(
+                    Vessel.fromConfig(parser[section], dbclass))
 
     def __init__(self) -> None:
         """Initialize a new (empty) MonsterConfig object
         """
         self.directories = []
         self.vessels = []
-        self.chunksize = 10485760 # Default: 10 MiB
-        self.database = None # Default: "database.sqlite3" in base directory
+        self.chunksize = 10485760  # Default: 10 MiB
+        self.database = None  # Default: "database.sqlite3" in base directory

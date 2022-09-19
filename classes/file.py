@@ -11,7 +11,7 @@ class File:
     """Object representing a file found in a local Directory
     """
 
-    def __init__(self, name: str, directory, uuid: Optional[str] = None) -> None:
+    def __init__(self, name: str, directory, uuid: Optional[str] = None, dbclass: type = Database) -> None:
         """Initialize new File object
 
         Args:
@@ -20,12 +20,15 @@ class File:
               is located within
             uuid (str, optional): Unique identifier of this File object. Will
               be retrieved from database if None. Defaults to None.
+            dbclass (type): Class to use for database connections. Defaults to
+              built-in Database using sqlite3.
 
         Raises:
             FileNotFoundError: Raised if the specified File does not exist
         """
         self.name = name
         self.directory = directory
+        self.dbclass = dbclass
 
         if not self.exists():
             raise FileNotFoundError(f"File {self.name} does not exist in {self.directory.name}!")
@@ -47,9 +50,9 @@ class File:
         """Return unique identifier for this File object
 
         Returns:
-            str: File object's UUID retrieved from Database
+            str: File object's UUID retrieved from database
         """
-        db = Database()
+        db = self.dbclass()
         return db.getFileUUID(self)
 
     def getFullPath(self) -> str:

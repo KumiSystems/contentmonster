@@ -14,12 +14,14 @@ class Vessel:
     """Class describing a Vessel (= a replication destination)
     """
     @classmethod
-    def fromConfig(cls, config: SectionProxy):
+    def fromConfig(cls, config: SectionProxy, dbclass: type = Database):
         """Create Vessel object from a Vessel section in the Config file
 
         Args:
             config (configparser.SectionProxy): Vessel section defining a 
               Vessel
+            dbclass (type): Class to use for database connections. Defaults to
+              built-in Database using sqlite3.
 
         Raises:
             ValueError: Raised if section does not contain Address parameter
@@ -60,7 +62,7 @@ class Vessel:
 
         if "Address" in config.keys():
             return cls(config.name.split()[1], config["Address"], username,
-                       password, passphrase, port, timeout, tempdir, ignoredirs)
+                       password, passphrase, port, timeout, tempdir, ignoredirs, dbclass)
         else:
             raise ValueError("Definition for Vessel " +
                              config.name.split()[1] + " does not contain Address!")
@@ -69,7 +71,7 @@ class Vessel:
                  password: Optional[str] = None, passphrase: Optional[str] = None,
                  port: Optional[int] = None, timeout: Optional[int] = None,
                  tempdir: Optional[Union[str, pathlib.Path]] = None,
-                 ignoredirs: list[Optional[str]] = []) -> None:
+                 ignoredirs: list[Optional[str]] = [], dbclass: type = Database) -> None:
         """Initialize new Vessel object
 
         Args:
@@ -89,6 +91,7 @@ class Vessel:
         self._connection = None
         self._uploaded = self.getUploadedFromDB()  # Files already uploaded
         self._ignoredirs = ignoredirs  # Directories not replicated to this vessel
+        self._dbclass = dbclass
 
     @property
     def connection(self) -> Connection:
@@ -116,7 +119,7 @@ class Vessel:
         Returns:
             list: List of UUIDs of Files that have been successfully uploaded
         """
-        db = Database()
+        db = self._dbclass()
         return db.getCompletionForVessel(self)
 
     def currentUpload(self) -> Optional[tuple[str, str, str]]:
@@ -129,9 +132,9 @@ class Vessel:
               checksum is the SHA256 hash of the file at the time of insertion
               into the database.  None is returned if no such record is found.
         """
-        self.assertTempDirectory() # After a reboot, the tempdir may be gone
+        self.assertTempDirectory()  # After a reboot, the tempdir may be gone
 
-        db = Database()
+        db = self._dbclass()
         output = db.getFileByUUID(self.connection.getCurrentUploadUUID())
         del db
 
