@@ -3,6 +3,7 @@ from .doghandler import DogHandler
 from .directory import Directory
 from .database import Database
 from .logger import Logger
+from .file import File
 
 from watchdog.observers import Observer
 
@@ -111,7 +112,7 @@ class ShoreThread(Process):
         db = self._dbclass()
         db.removeFile(directory, name)
 
-    def addFile(self, fileobj):
+    def addFile(self, fileobj: File):
         """Add a File object to the processing queue, if not already there
 
         Args:
